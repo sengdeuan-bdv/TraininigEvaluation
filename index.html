@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analysis Training Evaluation</title>
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS -->a
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Chart.js -->
+    <!-- Chart.js and DataLabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     
@@ -48,6 +48,7 @@
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
             border: 1px solid #e2e8f0;
             padding: 1.5rem;
+            page-break-inside: avoid; /* Prevents cards from splitting in PDF */
         }
         .file-drop-area {
             border: 2px dashed #cbd5e1;
@@ -60,23 +61,27 @@
         canvas {
             max-height: 100%;
         }
-        /* Improve PDF export layout by preventing cards from cutting in half */
-        .glass-card {
-            page-break-inside: avoid;
-        }
     </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
     <!-- Top Navigation -->
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm print:hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center gap-3">
                     <i data-lucide="bar-chart-2" class="w-6 h-6 text-primary"></i>
-                    <h1 class="text-xl font-bold text-slate-900" data-i18n="title">Analysis Training Evaluation</h1>
+                    <h1 class="text-xl font-bold text-slate-900 truncate max-w-md lg:max-w-xl" data-i18n="title">Analysis Training Evaluation</h1>
                 </div>
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <button id="navUploadBtn" class="hidden px-3 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-sm font-semibold transition-colors flex items-center gap-2 text-slate-700" onclick="document.getElementById('fileInput').click()">
+                        <i data-lucide="file-up" class="w-4 h-4"></i>
+                        <span data-i18n="navUpload">Upload Excel</span>
+                    </button>
+                    <button id="clearDataBtn" class="hidden px-3 py-1.5 rounded-md bg-rose-50 text-rose-600 hover:bg-rose-100 text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span data-i18n="clearData">Clear Data</span>
+                    </button>
                     <button id="exportPdfBtn" class="hidden px-3 py-1.5 rounded-md bg-primary text-white hover:bg-indigo-700 text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm disabled:opacity-75 disabled:cursor-not-allowed">
                         <i data-lucide="download" class="w-4 h-4"></i>
                         <span data-i18n="exportPdf">Export PDF</span>
@@ -93,7 +98,7 @@
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         
         <!-- Upload Section -->
-        <div id="uploadSection" class="max-w-2xl mx-auto mt-10">
+        <div id="uploadSection" class="max-w-2xl mx-auto mt-10 print:hidden">
             <div class="glass-card file-drop-area flex flex-col items-center justify-center p-12 text-center cursor-pointer" id="dropZone">
                 <i data-lucide="upload-cloud" class="w-12 h-12 text-primary mb-4"></i>
                 <h2 class="text-xl font-semibold mb-2" data-i18n="uploadTitle">Upload your Excel Data</h2>
@@ -107,7 +112,7 @@
         <div id="dashboardContent" class="hidden space-y-8">
             
             <!-- Filter Bar -->
-            <div class="glass-card flex flex-col sm:flex-row items-center justify-between gap-4 bg-primary/5 border-primary/20">
+            <div id="filterBarContainer" class="glass-card flex flex-col sm:flex-row items-center justify-between gap-4 bg-primary/5 border-primary/20 print:hidden">
                 <div class="flex items-center gap-2">
                     <i data-lucide="filter" class="w-5 h-5 text-primary"></i>
                     <span class="font-medium text-primary" data-i18n="filterByProvince">Filter by Province:</span>
@@ -117,114 +122,123 @@
                 </select>
             </div>
 
-            <!-- Section 1: General Info -->
-            <section>
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2"><i data-lucide="users" class="w-5 h-5 text-slate-500"></i> <span data-i18n="sec1Title">Section 1: General Information</span></h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="glass-card flex items-center gap-4 border-l-4 border-l-primary">
-                        <div class="p-3 bg-primary/10 rounded-full text-primary"><i data-lucide="users" class="w-6 h-6"></i></div>
-                        <div>
-                            <p class="text-sm text-slate-500 font-medium" data-i18n="totalParticipants">Total Participants</p>
-                            <h3 class="text-3xl font-bold text-slate-800" id="statTotal">0</h3>
+            <!-- ================= PAGE 1 CONTAINER ================= -->
+            <div id="pdfPage1" class="space-y-8">
+                <!-- Section 1: General Info -->
+                <section>
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2"><i data-lucide="users" class="w-5 h-5 text-slate-500"></i> <span data-i18n="sec1Title">Section 1: General Information</span></h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="glass-card flex items-center gap-4 border-l-4 border-l-primary">
+                            <div class="p-3 bg-primary/10 rounded-full text-primary"><i data-lucide="users" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-sm text-slate-500 font-medium" data-i18n="totalParticipants">Total Participants</p>
+                                <h3 class="text-3xl font-bold text-slate-800" id="statTotal">0</h3>
+                            </div>
+                        </div>
+                        <div class="glass-card flex items-center gap-4 border-l-4 border-l-sky-500">
+                            <div class="p-3 bg-sky-100 rounded-full text-sky-600"><i data-lucide="user" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-sm text-slate-500 font-medium" data-i18n="genderMale">Male</p>
+                                <h3 class="text-3xl font-bold text-slate-800" id="statMale">0</h3>
+                            </div>
+                        </div>
+                        <div class="glass-card flex items-center gap-4 border-l-4 border-l-rose-500">
+                            <div class="p-3 bg-rose-100 rounded-full text-rose-600"><i data-lucide="user" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-sm text-slate-500 font-medium" data-i18n="genderFemale">Female</p>
+                                <h3 class="text-3xl font-bold text-slate-800" id="statFemale">0</h3>
+                            </div>
                         </div>
                     </div>
-                    <div class="glass-card flex items-center gap-4 border-l-4 border-l-sky-500">
-                        <div class="p-3 bg-sky-100 rounded-full text-sky-600"><i data-lucide="user" class="w-6 h-6"></i></div>
-                        <div>
-                            <p class="text-sm text-slate-500 font-medium" data-i18n="genderMale">Male</p>
-                            <h3 class="text-3xl font-bold text-slate-800" id="statMale">0</h3>
+                </section>
+
+                <!-- Section 2: Experience & Expectation -->
+                <section>
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2"><i data-lucide="lightbulb" class="w-5 h-5 text-slate-500"></i> <span data-i18n="sec2Title">Section 2: Experience and Expectation</span></h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Before/After Chart -->
+                        <div class="glass-card flex flex-col h-72">
+                            <h3 class="text-sm font-semibold mb-4 text-center text-slate-600" data-i18n="chartKnowledge">Knowledge Before vs After (Knowledgeable & Very Knowledgeable)</h3>
+                            <div class="relative flex-grow w-full"><canvas id="chartKnowledge"></canvas></div>
+                        </div>
+                        
+                        <!-- Challenges Horizontal Bar -->
+                        <div class="glass-card flex flex-col h-72">
+                            <h3 class="text-sm font-semibold mb-4 text-center text-slate-600" data-i18n="chartChallengesList">Anticipated Challenges Encountered (%)</h3>
+                            <div class="relative flex-grow w-full"><canvas id="chartChallenges"></canvas></div>
                         </div>
                     </div>
-                    <div class="glass-card flex items-center gap-4 border-l-4 border-l-rose-500">
-                        <div class="p-3 bg-rose-100 rounded-full text-rose-600"><i data-lucide="user" class="w-6 h-6"></i></div>
-                        <div>
-                            <p class="text-sm text-slate-500 font-medium" data-i18n="genderFemale">Female</p>
-                            <h3 class="text-3xl font-bold text-slate-800" id="statFemale">0</h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="glass-card flex flex-col h-60">
+                            <h3 class="text-sm font-semibold mb-4 text-center text-slate-600 line-clamp-2" title="How relevant is this course to your current work?" data-i18n="chartRelevance">Relevance to Current Work</h3>
+                            <div class="relative flex-grow w-full"><canvas id="chartRelevance"></canvas></div>
+                        </div>
+                        <div class="glass-card flex flex-col h-60">
+                            <h3 class="text-sm font-semibold mb-4 text-center text-slate-600 line-clamp-2" title="Do you think you will use what you learned in this training in your job?" data-i18n="chartUsefulness">Will Use Learned Skills</h3>
+                            <div class="relative flex-grow w-full"><canvas id="chartUsefulness"></canvas></div>
+                        </div>
+                        <div class="glass-card flex flex-col h-60">
+                            <h3 class="text-sm font-semibold mb-4 text-center text-slate-600 line-clamp-2" title="Do you think there will be any challenges to using the training knowledge/skills in your work?" data-i18n="chartHasChallenges">Expect Challenges?</h3>
+                            <div class="relative flex-grow w-full"><canvas id="chartHasChallenges"></canvas></div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            </div>
 
-            <!-- Section 2: Experience & Expectation -->
-            <section>
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2"><i data-lucide="lightbulb" class="w-5 h-5 text-slate-500"></i> <span data-i18n="sec2Title">Section 2: Experience and Expectation</span></h2>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <!-- Before/After Chart -->
-                    <div class="glass-card flex flex-col h-96">
-                        <h3 class="text-sm font-semibold mb-4 text-center text-slate-600" data-i18n="chartKnowledge">Knowledge Before vs After (Knowledgeable & Very Knowledgeable)</h3>
-                        <div class="relative flex-grow w-full"><canvas id="chartKnowledge"></canvas></div>
+            <!-- ================= PAGE 2 CONTAINER ================= -->
+            <div id="pdfPage2" class="space-y-8">
+                <!-- Section 3: Quality of Training -->
+                <section id="section3">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2"><i data-lucide="star" class="w-5 h-5 text-slate-500"></i> <span data-i18n="sec3Title">Section 3: Quality of Training (Agreement Matrix)</span></h2>
+                    <div class="glass-card overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider" data-i18n="thTheme">Theme</th>
+                                    <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider" data-i18n="thPositive">Agree + Strongly Agree</th>
+                                    <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider" data-i18n="thNeutral">Neutral</th>
+                                    <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider" data-i18n="thNegative">Strongly Disagree + Disagree</th>
+                                </tr>
+                            </thead>
+                            <tbody id="themeMatrixBody" class="bg-white divide-y divide-slate-200">
+                                <!-- Matrix rows injected via JS -->
+                            </tbody>
+                        </table>
                     </div>
-                    
-                    <!-- Challenges Horizontal Bar -->
-                    <div class="glass-card flex flex-col h-96">
-                        <h3 class="text-sm font-semibold mb-4 text-center text-slate-600" data-i18n="chartChallengesList">Anticipated Challenges Encountered (%)</h3>
-                        <div class="relative flex-grow w-full"><canvas id="chartChallenges"></canvas></div>
-                    </div>
-                </div>
+                </section>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="glass-card flex flex-col h-72">
-                        <h3 class="text-sm font-semibold mb-4 text-center text-slate-600 line-clamp-2" title="How relevant is this course to your current work?" data-i18n="chartRelevance">Relevance to Current Work</h3>
-                        <div class="relative flex-grow w-full"><canvas id="chartRelevance"></canvas></div>
-                    </div>
-                    <div class="glass-card flex flex-col h-72">
-                        <h3 class="text-sm font-semibold mb-4 text-center text-slate-600 line-clamp-2" title="Do you think you will use what you learned in this training in your job?" data-i18n="chartUsefulness">Will Use Learned Skills</h3>
-                        <div class="relative flex-grow w-full"><canvas id="chartUsefulness"></canvas></div>
-                    </div>
-                    <div class="glass-card flex flex-col h-72">
-                        <h3 class="text-sm font-semibold mb-4 text-center text-slate-600 line-clamp-2" title="Do you think there will be any challenges to using the training knowledge/skills in your work?" data-i18n="chartHasChallenges">Expect Challenges?</h3>
-                        <div class="relative flex-grow w-full"><canvas id="chartHasChallenges"></canvas></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Section 3: Quality of Training -->
-            <section>
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2"><i data-lucide="star" class="w-5 h-5 text-slate-500"></i> <span data-i18n="sec3Title">Section 3: Quality of Training (Agreement Matrix)</span></h2>
-                <div class="glass-card overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200">
-                        <thead class="bg-slate-50">
-                            <tr>
-                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider" data-i18n="thTheme">Theme</th>
-                                <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider" data-i18n="thPositive">Agree + Strongly Agree</th>
-                                <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider" data-i18n="thNeutral">Neutral</th>
-                                <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider" data-i18n="thNegative">Strongly Disagree + Disagree</th>
-                            </tr>
-                        </thead>
-                        <tbody id="themeMatrixBody" class="bg-white divide-y divide-slate-200">
-                            <!-- Matrix rows injected via JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Section 4: Overall -->
-            <section>
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2"><i data-lucide="award" class="w-5 h-5 text-slate-500"></i> <span data-i18n="sec4Title">Section 4: Overall of Training</span></h2>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="glass-card lg:col-span-1 flex flex-col h-80">
-                        <h3 class="text-sm font-semibold mb-4 text-center text-slate-600" data-i18n="chartOverall">Overall Training Rating</h3>
-                        <div class="relative flex-grow w-full"><canvas id="chartOverall"></canvas></div>
-                    </div>
-                    
-                    <div class="glass-card lg:col-span-2">
-                        <h3 class="text-sm font-semibold mb-4 text-slate-600 flex items-center gap-2"><i data-lucide="message-square" class="w-4 h-4"></i> <span data-i18n="quotesTitle">Participant Quotes & Feedback</span></h3>
-                        <div id="quotesContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <!-- Quotes injected via JS -->
+                <!-- Section 4: Overall -->
+                <section>
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2"><i data-lucide="award" class="w-5 h-5 text-slate-500"></i> <span data-i18n="sec4Title">Section 4: Overall of Training</span></h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="glass-card lg:col-span-1 flex flex-col h-72">
+                            <h3 class="text-sm font-semibold mb-4 text-center text-slate-600" data-i18n="chartOverall">Overall Training Rating</h3>
+                            <div class="relative flex-grow w-full"><canvas id="chartOverall"></canvas></div>
+                        </div>
+                        
+                        <div class="glass-card lg:col-span-2">
+                            <h3 class="text-sm font-semibold mb-4 text-slate-600 flex items-center gap-2"><i data-lucide="message-square" class="w-4 h-4"></i> <span data-i18n="quotesTitle">Participant Quotes & Feedback</span></h3>
+                            <div id="quotesContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <!-- Quotes injected via JS -->
+                            </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+                
+                <footer class="text-center text-slate-400 text-sm py-6 mt-8" data-i18n="footerText">
+                    Generated dynamically from Excel data.
+                </footer>
+            </div>
             
-            <footer class="text-center text-slate-400 text-sm py-6 mt-8" data-i18n="footerText">
-                Generated dynamically from Excel data.
-            </footer>
         </div>
     </main>
 
     <script>
         // Initialize Lucide Icons
         lucide.createIcons();
+        
+        // Register Chart.js DataLabels plugin globally
         Chart.register(ChartDataLabels);
 
         // State Management
@@ -234,14 +248,13 @@
         let chartInstances = {};
         let uploadedFileName = '';
 
-        // Colors
+        // Colors Theme
         const colors = {
             primary: '#4f46e5', secondary: '#10b981', warning: '#f59e0b', 
-            danger: '#ef4444', info: '#0ea5e9', neutral: '#94a3b8',
-            likert: ['#ef4444', '#f97316', '#e2e8f0', '#22c55e', '#166534'] // SD, D, N, A, SA
+            danger: '#ef4444', info: '#0ea5e9', neutral: '#94a3b8'
         };
 
-        // UI Translations
+        // UI Translations Dictionary
         const i18n = {
             en: {
                 title: "Analysis Training Evaluation",
@@ -270,7 +283,9 @@
                 footerText: "Generated dynamically from Excel data.",
                 noFeedback: "No textual feedback found.",
                 exportPdf: "Export PDF",
-                exporting: "Generating..."
+                exporting: "Generating...",
+                navUpload: "Upload Excel",
+                clearData: "Clear Data"
             },
             lo: {
                 title: "ການປະເມີນຜົນການຝຶກອົບຮົມການວິເຄາະ",
@@ -299,11 +314,13 @@
                 footerText: "ສ້າງຂຶ້ນອັດຕະໂນມັດຈາກຂໍ້ມູນ Excel.",
                 noFeedback: "ບໍ່ພົບຄຳເຫັນ ຫຼື ຂໍ້ສະເໜີແນະ.",
                 exportPdf: "ສົ່ງອອກ PDF",
-                exporting: "ກຳລັງສ້າງ..."
+                exporting: "ກຳລັງສ້າງ...",
+                navUpload: "ອັບໂຫຼດ Excel",
+                clearData: "ລຶບຂໍ້ມູນ"
             }
         };
 
-        // Dynamic Chart Data Translations (English raw values to Lao)
+        // Dynamic Chart Data Translations (Maps raw English from Excel -> Lao)
         const dataTranslations = {
             "very knowledgeable": "ມີຄວາມຮູ້ຫຼາຍ",
             "knowledgeable": "ມີຄວາມຮູ້",
@@ -343,7 +360,7 @@
         fileInput.addEventListener('change', (e) => { if(e.target.files.length) processFile(e.target.files[0]); });
 
         function processFile(file) {
-            // Remove the file extension (e.g., .xlsx, .xls, .csv) from the file name
+            // Store filename without extension
             uploadedFileName = file.name.replace(/\.[^/.]+$/, "");
             
             const reader = new FileReader();
@@ -351,26 +368,26 @@
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 
-                // Get the first worksheet
+                // Read First Sheet
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
-                
-                // Convert sheet to JSON array
                 const jsonResults = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
-                // Filter out rows that might just be secondary header rows (often found in exports)
+                // Filter out empty rows or secondary header rows
                 rawData = jsonResults.filter(row => {
                     const keys = Object.keys(row);
-                    // A valid row usually has a rating in Q12 or Q1
                     const q1Key = keys.find(k => k.includes("1. Please rate your knowledge"));
                     return row[q1Key] && row[q1Key].toString().trim() !== "";
                 });
                 
+                // Show Dashboard
                 document.getElementById('uploadSection').classList.add('hidden');
                 document.getElementById('dashboardContent').classList.remove('hidden');
                 document.getElementById('exportPdfBtn').classList.remove('hidden');
+                document.getElementById('navUploadBtn').classList.remove('hidden');
+                document.getElementById('clearDataBtn').classList.remove('hidden');
                 
-                // Update title with file name
+                // Append Filename to Title
                 document.querySelector('[data-i18n="title"]').innerText = `${i18n[currentLang].title}: ${uploadedFileName}`;
                 
                 setupFilters();
@@ -394,7 +411,7 @@
             const provinces = [...new Set(rawData.map(r => r[provKey]).filter(p => p))].sort();
             const filterEl = document.getElementById('provinceFilter');
             
-            // Clear existing except first
+            // Clear existing except placeholder
             filterEl.innerHTML = `<option value="All">${i18n[currentLang].allProvinces}</option>`;
             
             provinces.forEach(p => {
@@ -412,7 +429,7 @@
             filteredData = [...rawData];
         }
 
-        // Main Dashboard Update
+        // Main Dashboard Updater
         function updateDashboard() {
             updateSection1();
             updateSection2();
@@ -461,14 +478,14 @@
             const counts = {};
             filteredData.forEach(r => {
                 let val = (r[key] || 'N/A').trim();
-                counts[val] = (counts[val] || 0) + 1;
+                if(val) counts[val] = (counts[val] || 0) + 1;
             });
             return counts;
         }
 
         // Section 2 Logic
         function updateSection2() {
-            // Before vs After
+            // Chart 1: Before vs After (Knowledgeable counts)
             const keyBef = getColKey("1. Please rate your knowledge");
             const keyAft = getColKey("2. Please rate your knowledge");
             
@@ -511,7 +528,7 @@
                 }
             });
 
-            // Q3, Q4, Q5
+            // Charts 2, 3, 4: Vertical Bars with percentages
             const keys = {
                 rel: getColKey("3. How relevant"),
                 use: getColKey("4. Do you think you will use"),
@@ -556,11 +573,7 @@
                         }
                     },
                     scales: {
-                        y: {
-                            max: 100,
-                            ticks: { callback: v => v + '%' },
-                            grid: { borderDash: [4, 4] }
-                        }
+                        y: { max: 100, ticks: { callback: v => v + '%' }, grid: { borderDash: [4, 4] } }
                     }
                 });
             };
@@ -569,7 +582,7 @@
             drawVerticalBarPercent('chartUsefulness', keys.use, i18n[currentLang].chartUsefulness);
             drawVerticalBarPercent('chartHasChallenges', keys.chal, i18n[currentLang].chartHasChallenges);
 
-            // Challenges List
+            // Chart 5: Challenges Horizontal Bar
             const chalCols = [
                 { match: "need more training before I feel comfortable", en: "Need more training", lo: "ຕ້ອງການການຝຶກອົບຮົມເພີ່ມເຕີມ" },
                 { match: "not have the resources I need", en: "Lack resources", lo: "ຂາດຊັບພະຍາກອນ" },
@@ -603,7 +616,7 @@
             });
         }
 
-        // Section 3 Logic (Themes)
+        // Section 3 Logic (Themes Agreement Matrix)
         function updateSection3() {
             const themes = {
                 theme1: { keys: ["7a.", "7b.", "7c.", "7d.", "7e."], labelId: "theme1" },
@@ -629,7 +642,7 @@
                             let val = (r[colKey]||'').trim().toLowerCase();
                             if(val === '') return;
                             
-                            // Grouping responses dynamically
+                            // Grouping Likert responses dynamically
                             if(val.includes('agree') && !val.includes('disagree')) { positive++; total++; }
                             else if(val.includes('neutral')) { neutral++; total++; }
                             else if(val.includes('disagree')) { negative++; total++; }
@@ -662,7 +675,7 @@
 
         // Section 4 Logic
         function updateSection4() {
-            // Overall Rating
+            // Overall Rating Doughnut Chart
             const keyOverall = getColKey("12. Overall, how would you rate");
             if(keyOverall) {
                 const counts = countFrequencies(keyOverall);
@@ -699,8 +712,7 @@
                 });
             }
 
-            // Quotes extraction
-            // Find columns after index of Q12 that contain text. 
+            // Participant Quotes Filter
             const keys = Object.keys(rawData[0] || {});
             const q12Idx = keys.findIndex(k => k.includes("12. Overall"));
             let textVals = [];
@@ -710,7 +722,7 @@
                 const quoteCol = keys[q12Idx + 1];
                 filteredData.forEach(r => {
                     const txt = (r[quoteCol] || "").trim();
-                    // Exclude empty, numbers, and specific generic answers containing "ເຫັນດີ" or "Agree"
+                    // Exclude empty, pure numbers, and generic answers containing "ເຫັນດີ" or "Agree"
                     if(txt && isNaN(txt) && !txt.includes("ເຫັນດີ") && !txt.toLowerCase().includes("agree")) {
                         textVals.push(txt);
                     }
@@ -728,7 +740,7 @@
             } else {
                 textVals.forEach(txt => {
                     qContainer.innerHTML += `
-                        <div class="bg-amber-50 p-4 rounded-xl border border-amber-100 shadow-sm relative">
+                        <div class="bg-amber-50 p-4 rounded-xl border border-amber-100 shadow-sm relative page-break-inside-avoid">
                             <i data-lucide="quote" class="w-6 h-6 text-amber-200 absolute top-3 right-3"></i>
                             <p class="text-sm text-amber-900 pr-6 italic">"${txt}"</p>
                         </div>
@@ -738,11 +750,11 @@
             }
         }
 
-        // Language Toggle
+        // Language Toggle Logic
         document.getElementById('langToggle').addEventListener('click', () => {
             currentLang = currentLang === 'en' ? 'lo' : 'en';
             
-            // Update static texts
+            // Update static texts based on i18n dictionary
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if(i18n[currentLang][key]) {
@@ -754,13 +766,13 @@
                 }
             });
 
-            // Update filter placeholder text if "All Provinces" is selected
+            // Update filter placeholder text
             const filterEl = document.getElementById('provinceFilter');
             if(filterEl.options.length > 0) {
                 filterEl.options[0].text = i18n[currentLang].allProvinces;
             }
 
-            // Re-render charts to update dynamic labels
+            // Re-render charts to update dynamic labels safely
             if(!document.getElementById('dashboardContent').classList.contains('hidden')) {
                 updateDashboard();
             }
@@ -777,32 +789,75 @@
             lucide.createIcons();
 
             const element = document.getElementById('dashboardContent');
+            const filterBar = document.getElementById('filterBarContainer');
             const fileName = currentLang === 'en' ? 'Training_Evaluation_Dashboard.pdf' : 'ລາຍງານການປະເມີນຜົນການຝຶກອົບຮົມ.pdf';
             
+            // Hide the filter section during export completely
+            if (filterBar) filterBar.classList.add('hidden');
+            
+            // Adjust spacing and force fixed width for perfect A4 scaling
+            element.classList.remove('space-y-8');
+            element.classList.add('space-y-4');
+            element.style.width = '1200px';
+            element.style.maxWidth = '1200px';
+
             const opt = {
-                margin:       0.3,
+                margin:       [0.4, 0.4, 0.4, 0.4], 
                 filename:     fileName,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, windowWidth: 1200 }, // Fixes window width so charts format cleanly
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                // windowWidth matches the forced CSS width to guarantee perfect rendering
+                html2canvas:  { scale: 2, useCORS: true, windowWidth: 1200 }, 
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+                // Force a pagebreak exactly before the Page 2 container wrapper
+                pagebreak:    { mode: ['css', 'legacy'], before: '#pdfPage2' } 
             };
 
-            // Add padding briefly for print aesthetics
-            element.classList.add('px-4', 'pb-4');
-
             html2pdf().set(opt).from(element).save().then(() => {
-                // Restore button state
+                // Restore button and DOM state
                 btn.innerHTML = originalHtml;
                 btn.disabled = false;
-                element.classList.remove('px-4', 'pb-4');
+                if (filterBar) filterBar.classList.remove('hidden');
+                element.classList.add('space-y-8');
+                element.classList.remove('space-y-4');
+                element.style.width = '';
+                element.style.maxWidth = '';
                 lucide.createIcons();
             }).catch(err => {
                 console.error("PDF Export failed:", err);
                 btn.innerHTML = originalHtml;
                 btn.disabled = false;
-                element.classList.remove('px-4', 'pb-4');
+                if (filterBar) filterBar.classList.remove('hidden');
+                element.classList.add('space-y-8');
+                element.classList.remove('space-y-4');
+                element.style.width = '';
+                element.style.maxWidth = '';
                 lucide.createIcons();
             });
+        });
+
+        // Clear Data Logic
+        document.getElementById('clearDataBtn').addEventListener('click', function() {
+            // Reset Data State
+            rawData = [];
+            filteredData = [];
+            uploadedFileName = '';
+            
+            // Clear File Input so the same file can be uploaded again if desired
+            document.getElementById('fileInput').value = '';
+            
+            // Destroy Charts to prevent memory leaks or ghosting
+            Object.values(chartInstances).forEach(chart => chart.destroy());
+            chartInstances = {};
+
+            // Reset UI Visibility
+            document.getElementById('dashboardContent').classList.add('hidden');
+            document.getElementById('exportPdfBtn').classList.add('hidden');
+            document.getElementById('navUploadBtn').classList.add('hidden');
+            document.getElementById('clearDataBtn').classList.add('hidden');
+            document.getElementById('uploadSection').classList.remove('hidden');
+
+            // Reset Title to original translated value
+            document.querySelector('[data-i18n="title"]').innerText = i18n[currentLang].title;
         });
 
     </script>
