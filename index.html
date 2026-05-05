@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysis Training Evaluation</title>
+    <title>Training Evaluation</title>
     
     <!-- Tailwind CSS -->a
     <script src="https://cdn.tailwindcss.com"></script>
@@ -81,6 +81,10 @@
                     <button id="clearDataBtn" class="hidden px-3 py-1.5 rounded-md bg-rose-50 text-rose-600 hover:bg-rose-100 text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                         <span data-i18n="clearData">Clear Data</span>
+                    </button>
+                    <button id="exportWordBtn" class="hidden px-3 py-1.5 rounded-md bg-sky-600 text-white hover:bg-sky-700 text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                        <span data-i18n="exportWord">Export Word</span>
                     </button>
                     <button id="exportPdfBtn" class="hidden px-3 py-1.5 rounded-md bg-primary text-white hover:bg-indigo-700 text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm disabled:opacity-75 disabled:cursor-not-allowed">
                         <i data-lucide="download" class="w-4 h-4"></i>
@@ -283,9 +287,23 @@
                 footerText: "Generated dynamically from Excel data.",
                 noFeedback: "No textual feedback found.",
                 exportPdf: "Export PDF",
+                exportWord: "Export Word",
                 exporting: "Generating...",
                 navUpload: "Upload Excel",
-                clearData: "Clear Data"
+                clearData: "Clear Data",
+                // Narrative templates
+                repTitle: "Training Evaluation Narrative Report",
+                repSec1: "1. Demographics",
+                repSec2: "2. Experience and Expectations",
+                repSec3: "3. Quality of Training",
+                repSec4: "4. Overall Satisfaction",
+                repContent1: "A total of {total} participants attended the training, comprising {male} males and {female} females.",
+                repContent2: "Before the training, {befPct}% of participants felt knowledgeable or very knowledgeable about the topic. After the training, this increased significantly to {aftPct}%.",
+                repContent3: "{relPct}% of participants found the course to be relevant or very relevant to their current work. Furthermore, {usePct}% indicated they plan to use the skills learned in their job.",
+                repContent4: "Regarding implementation, {chalPct}% anticipated challenges in applying the knowledge. The most common challenges reported were: {topChallenges}.",
+                repContent_Quality: "Participants evaluated the quality of the training across five themes. The average positive agreement (Agree/Strongly Agree) was {theme1}% for Time Management, {theme2}% for Communication, {theme3}% for Resources, {theme4}% for Effectiveness, and {theme5}% for Session Efficiency.",
+                repContent5: "Overall, {overallPct}% of participants rated the training as Excellent or Good.",
+                repContent6: "Participant Feedback & Quotes:"
             },
             lo: {
                 title: "ການປະເມີນຜົນການຝຶກອົບຮົມການວິເຄາະ",
@@ -314,9 +332,23 @@
                 footerText: "ສ້າງຂຶ້ນອັດຕະໂນມັດຈາກຂໍ້ມູນ Excel.",
                 noFeedback: "ບໍ່ພົບຄຳເຫັນ ຫຼື ຂໍ້ສະເໜີແນະ.",
                 exportPdf: "ສົ່ງອອກ PDF",
+                exportWord: "ສົ່ງອອກ Word",
                 exporting: "ກຳລັງສ້າງ...",
                 navUpload: "ອັບໂຫຼດ Excel",
-                clearData: "ລຶບຂໍ້ມູນ"
+                clearData: "ລຶບຂໍ້ມູນ",
+                // Narrative templates
+                repTitle: "ບົດລາຍງານສັງລວມການປະເມີນຜົນການຝຶກອົບຮົມ",
+                repSec1: "1. ຂໍ້ມູນຜູ້ເຂົ້າຮ່ວມ",
+                repSec2: "2. ປະສົບການ ແລະ ຄວາມຄາດຫວັງ",
+                repSec3: "3. ຄຸນນະພາບຂອງການຝຶກອົບຮົມ",
+                repSec4: "4. ຄວາມເພິ່ງພໍໃຈລວມ",
+                repContent1: "ມີຜູ້ເຂົ້າຮ່ວມການຝຶກອົບຮົມທັງໝົດ {total} ທ່ານ, ໃນນັ້ນມີເພດຊາຍ {male} ທ່ານ ແລະ ເພດຍິງ {female} ທ່ານ.",
+                repContent2: "ກ່ອນການຝຶກອົບຮົມ, ມີພຽງ {befPct}% ຂອງຜູ້ເຂົ້າຮ່ວມທີ່ມີຄວາມຮູ້ ຫຼື ມີຄວາມຮູ້ຫຼາຍກ່ຽວກັບຫົວຂໍ້ນີ້. ແຕ່ຫຼັງຈາກການຝຶກອົບຮົມ, ຕົວເລກນີ້ໄດ້ເພີ່ມຂຶ້ນຢ່າງຈະແຈ້ງເປັນ {aftPct}%.",
+                repContent3: "{relPct}% ຂອງຜູ້ເຂົ້າຮ່ວມເຫັນວ່າຫຼັກສູດນີ້ມີຄວາມສອດຄ່ອງ ຫຼື ສອດຄ່ອງຫຼາຍກັບວຽກປະຈຸບັນ. ນອກຈາກນັ້ນ, {usePct}% ລະບຸວ່າເຂົາເຈົ້າຈະນຳໃຊ້ທັກສະທີ່ໄດ້ຮຽນຮູ້ເຂົ້າໃນວຽກງານ.",
+                repContent4: "ສຳລັບການນຳໄປຈັດຕັ້ງປະຕິບັດ, {chalPct}% ຄາດວ່າຈະພົບກັບສິ່ງທ້າທາຍ. ສິ່ງທ້າທາຍທີ່ພົບເລື້ອຍທີ່ສຸດແມ່ນ: {topChallenges}.",
+                repContent_Quality: "ຜູ້ເຂົ້າຮ່ວມໄດ້ປະເມີນຄຸນນະພາບຂອງການຝຶກອົບຮົມໃນ 5 ຫົວຂໍ້. ຄ່າສະເລ່ຍຂອງຄວາມເຫັນດີໃນທາງບວກ (ເຫັນດີ/ເຫັນດີຫຼາຍ) ແມ່ນ {theme1}% ສຳລັບຫົວຂໍ້ເວລາ, {theme2}% ສຳລັບການສື່ສານ, {theme3}% ສຳລັບຊັບພະຍາກອນ, {theme4}% ສຳລັບປະສິດທິຜົນ, ແລະ {theme5}% ສຳລັບປະສິດທິພາບຂອງກອງປະຊຸມ.",
+                repContent5: "ໂດຍລວມແລ້ວ, {overallPct}% ຂອງຜູ້ເຂົ້າຮ່ວມໄດ້ປະເມີນການຝຶກອົບຮົມໃນລະດັບ ດີເລີດ ຫຼື ດີ.",
+                repContent6: "ຄຳເຫັນ ແລະ ຂໍ້ສະເໜີແນະຈາກຜູ້ເຂົ້າຮ່ວມ:"
             }
         };
 
@@ -384,6 +416,7 @@
                 document.getElementById('uploadSection').classList.add('hidden');
                 document.getElementById('dashboardContent').classList.remove('hidden');
                 document.getElementById('exportPdfBtn').classList.remove('hidden');
+                document.getElementById('exportWordBtn').classList.remove('hidden');
                 document.getElementById('navUploadBtn').classList.remove('hidden');
                 document.getElementById('clearDataBtn').classList.remove('hidden');
                 
@@ -683,31 +716,39 @@
                 
                 const originalLabels = Object.keys(counts);
                 const translatedLabels = originalLabels.map(l => translateDataValue(l));
+                const chartLabel = i18n[currentLang].chartOverall;
+                
+                const dataPcts = originalLabels.map(l => total ? Math.round((counts[l] / total) * 100) : 0);
+                const dataCounts = originalLabels.map(l => counts[l]);
 
-                drawChart('chartOverall', 'doughnut', {
+                drawChart('chartOverall', 'bar', {
                     labels: translatedLabels,
-                    datasets: [{ data: Object.values(counts), backgroundColor: [colors.secondary, colors.primary, colors.info, colors.warning] }]
+                    datasets: [{ 
+                        label: chartLabel,
+                        data: dataPcts, 
+                        backgroundColor: [colors.secondary, colors.primary, colors.info, colors.warning],
+                        borderRadius: 4
+                    }]
                 }, { 
-                    cutout: '50%',
                     plugins: {
-                        legend: { position: 'bottom', labels: { font: { family: 'Inter' } } },
+                        legend: { display: false },
                         datalabels: {
                             color: '#fff',
-                            font: { weight: 'bold', family: 'Inter' },
-                            formatter: (value) => {
-                                let pct = total ? Math.round((value / total) * 100) : 0;
-                                return pct > 0 ? pct + '%' : '';
-                            }
+                            anchor: 'end',
+                            align: 'bottom',
+                            formatter: (value) => value > 0 ? value + '%' : ''
                         },
                         tooltip: {
                             callbacks: {
                                 label: (ctx) => {
-                                    let val = ctx.raw;
-                                    let pct = total ? Math.round((val / total) * 100) : 0;
-                                    return ` ${ctx.label}: ${val} (${pct}%)`;
+                                    let idx = ctx.dataIndex;
+                                    return ` ${chartLabel}: ${dataCounts[idx]} (${ctx.raw}%)`;
                                 }
                             }
                         }
+                    },
+                    scales: {
+                        y: { max: 100, ticks: { callback: v => v + '%' }, grid: { borderDash: [4, 4] } }
                     }
                 });
             }
@@ -835,6 +876,178 @@
             });
         });
 
+        // Word Narrative Export Logic
+        document.getElementById('exportWordBtn').addEventListener('click', function() {
+            if(!filteredData || filteredData.length === 0) return;
+            
+            const t = i18n[currentLang];
+            const total = filteredData.length;
+
+            // Compute Stats
+            const genderKey = getColKey("Please identify if you are");
+            let male = 0, female = 0;
+            if(genderKey) {
+                filteredData.forEach(r => {
+                    const g = (r[genderKey]||'').toLowerCase();
+                    if(g.includes('male') && !g.includes('female')) male++;
+                    else if(g.includes('female')) female++;
+                });
+            }
+
+            const keyBef = getColKey("1. Please rate your knowledge");
+            const keyAft = getColKey("2. Please rate your knowledge");
+            let befCount = 0, aftCount = 0;
+            const validVals = ["very knowledgeable", "knowledgeable"];
+            filteredData.forEach(r => {
+                if(r[keyBef] && validVals.includes(r[keyBef].toLowerCase().trim())) befCount++;
+                if(r[keyAft] && validVals.includes(r[keyAft].toLowerCase().trim())) aftCount++;
+            });
+            const befPct = total ? Math.round((befCount/total)*100) : 0;
+            const aftPct = total ? Math.round((aftCount/total)*100) : 0;
+
+            const keyRel = getColKey("3. How relevant");
+            let relCount = 0;
+            filteredData.forEach(r => {
+                const val = (r[keyRel]||'').toLowerCase().trim();
+                if(val === 'very relevant' || val === 'relevant') relCount++;
+            });
+            const relPct = total ? Math.round((relCount/total)*100) : 0;
+
+            const keyUse = getColKey("4. Do you think you will use");
+            let useCount = 0;
+            filteredData.forEach(r => { if((r[keyUse]||'').toLowerCase().trim() === 'yes' || r[keyUse] == '1') useCount++; });
+            const usePct = total ? Math.round((useCount/total)*100) : 0;
+
+            const keyChal = getColKey("5. Do you think there will be any challenges");
+            let chalCount = 0;
+            filteredData.forEach(r => { if((r[keyChal]||'').toLowerCase().trim() === 'yes' || r[keyChal] == '1') chalCount++; });
+            const chalPct = total ? Math.round((chalCount/total)*100) : 0;
+
+            const chalCols = [
+                { match: "need more training before I feel comfortable", en: "Need more training", lo: "ຕ້ອງການການຝຶກອົບຮົມເພີ່ມເຕີມ" },
+                { match: "not have the resources I need", en: "Lack resources", lo: "ຂາດຊັບພະຍາກອນ" },
+                { match: "not have the time to use", en: "Lack time", lo: "ບໍ່ມີເວລາ" },
+                { match: "supervisor will not support me", en: "No supervisor support", lo: "ຫົວໜ້າບໍ່ສະໜັບສະໜູນ" },
+                { match: "colleagues will not support me", en: "No colleague support", lo: "ເພື່ອນຮ່ວມງານບໍ່ສະໜັບສະໜູນ" }
+            ];
+            let chalStats = chalCols.map(c => {
+                const k = getColKey(c.match);
+                let cCount = 0;
+                if(k) filteredData.forEach(r => { if(r[k] == "1" || String(r[k]).toLowerCase() === "yes") cCount++; });
+                return { label: c[currentLang], count: cCount };
+            });
+            chalStats = chalStats.sort((a,b) => b.count - a.count).filter(c => c.count > 0).map(c => c.label);
+            const topChallenges = chalStats.length > 0 ? chalStats.slice(0, 2).join(' & ') : (currentLang === 'en' ? 'None' : 'ບໍ່ມີ');
+
+            // Quality of Training Stats (Themes 1 - 5)
+            const themesData = {
+                t1: ["7a.", "7b.", "7c.", "7d.", "7e."],
+                t2: ["8a.", "8b.", "8c.", "8d.", "8e.", "8f."],
+                t3: ["9a.", "9b.", "9c.", "9d.", "9e.", "9f.", "9g."],
+                t4: ["10a.", "10b.", "10c.", "10d."],
+                t5: ["11a.", "11b.", "11c.", "11d.", "11e.", "11f."]
+            };
+            const themePcts = {};
+            Object.keys(themesData).forEach(tk => {
+                let positive = 0, tCount = 0;
+                themesData[tk].forEach(qMatch => {
+                    const colKey = getColKey(qMatch);
+                    if(colKey) {
+                        filteredData.forEach(r => {
+                            let val = (r[colKey]||'').trim().toLowerCase();
+                            if(val) {
+                                tCount++;
+                                if(val.includes('agree') && !val.includes('disagree')) positive++;
+                            }
+                        });
+                    }
+                });
+                themePcts[tk] = tCount ? Math.round((positive / tCount) * 100) : 0;
+            });
+
+            const keyOverall = getColKey("12. Overall, how would you rate");
+            let ovrCount = 0;
+            filteredData.forEach(r => {
+                const val = (r[keyOverall]||'').toLowerCase().trim();
+                if(val === 'excellent' || val === 'good') ovrCount++;
+            });
+            const overallPct = total ? Math.round((ovrCount/total)*100) : 0;
+
+            // Extract Quotes
+            const keys = Object.keys(rawData[0] || {});
+            const q12Idx = keys.findIndex(k => k.includes("12. Overall"));
+            let quotesText = '';
+            if(q12Idx !== -1 && q12Idx + 1 < keys.length) {
+                const quoteCol = keys[q12Idx + 1];
+                let textVals = [];
+                filteredData.forEach(r => {
+                    const txt = (r[quoteCol] || "").trim();
+                    if(txt && isNaN(txt) && !txt.includes("ເຫັນດີ") && !txt.toLowerCase().includes("agree")) textVals.push(txt);
+                });
+                textVals = textVals.sort(() => 0.5 - Math.random()).slice(0, 5);
+                if(textVals.length > 0) {
+                    quotesText = '<ul>' + textVals.map(q => `<li style="font-size: 12pt; margin-bottom: 8px;"><i>"${q}"</i></li>`).join('') + '</ul>';
+                } else {
+                    quotesText = `<p style="font-size: 12pt; font-style: italic;">${t.noFeedback}</p>`;
+                }
+            }
+
+            // Create HTML content for Word
+            const reportHTML = `
+                <div style="font-family: 'Phetsarath OT', 'Saysettha OT', 'Noto Sans Lao', Arial, sans-serif;">
+                    <h1 style="text-align: center; color: #1e293b; font-size: 18pt;">${t.repTitle}</h1>
+                    
+                    <h2 style="color: #4f46e5; font-size: 14pt; border-bottom: 1px solid #ccc; padding-bottom: 5px;">${t.repSec1}</h2>
+                    <p style="font-size: 12pt; line-height: 1.5;">${t.repContent1.replace('{total}', total).replace('{male}', male).replace('{female}', female)}</p>
+                    
+                    <h2 style="color: #4f46e5; font-size: 14pt; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 20px;">${t.repSec2}</h2>
+                    <p style="font-size: 12pt; line-height: 1.5;">
+                        ${t.repContent2.replace('{befPct}', befPct).replace('{aftPct}', aftPct)}
+                        <br><br>
+                        ${t.repContent3.replace('{relPct}', relPct).replace('{usePct}', usePct)}
+                        <br><br>
+                        ${t.repContent4.replace('{chalPct}', chalPct).replace('{topChallenges}', topChallenges)}
+                    </p>
+
+                    <h2 style="color: #4f46e5; font-size: 14pt; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 20px;">${t.repSec3}</h2>
+                    <p style="font-size: 12pt; line-height: 1.5;">
+                        ${t.repContent_Quality
+                            .replace('{theme1}', themePcts.t1)
+                            .replace('{theme2}', themePcts.t2)
+                            .replace('{theme3}', themePcts.t3)
+                            .replace('{theme4}', themePcts.t4)
+                            .replace('{theme5}', themePcts.t5)
+                        }
+                    </p>
+
+                    <h2 style="color: #4f46e5; font-size: 14pt; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 20px;">${t.repSec4}</h2>
+                    <p style="font-size: 12pt; line-height: 1.5;">${t.repContent5.replace('{overallPct}', overallPct)}</p>
+                    
+                    <p style="font-size: 12pt; font-weight: bold; margin-top: 15px;">${t.repContent6}</p>
+                    ${quotesText}
+                </div>
+            `;
+
+            // Export to .doc
+            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML to Word</title></head><body>";
+            const footer = "</body></html>";
+            const sourceHTML = header + reportHTML + footer;
+
+            const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            
+            const fn = currentLang === 'en' ? 'Training_Narrative_Report.doc' : 'ບົດລາຍງານການປະເມີນຜົນ.doc';
+            a.href = url;
+            a.download = fn;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 100);
+        });
+
         // Clear Data Logic
         document.getElementById('clearDataBtn').addEventListener('click', function() {
             // Reset Data State
@@ -852,6 +1065,7 @@
             // Reset UI Visibility
             document.getElementById('dashboardContent').classList.add('hidden');
             document.getElementById('exportPdfBtn').classList.add('hidden');
+            document.getElementById('exportWordBtn').classList.add('hidden');
             document.getElementById('navUploadBtn').classList.add('hidden');
             document.getElementById('clearDataBtn').classList.add('hidden');
             document.getElementById('uploadSection').classList.remove('hidden');
