@@ -82,6 +82,10 @@
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                         <span data-i18n="clearData">Clear Data</span>
                     </button>
+                    <button id="exportExcelBtn" class="hidden px-3 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                        <span data-i18n="exportExcel">Export Excel</span>
+                    </button>
                     <button id="exportWordBtn" class="hidden px-3 py-1.5 rounded-md bg-sky-600 text-white hover:bg-sky-700 text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm">
                         <i data-lucide="file-text" class="w-4 h-4"></i>
                         <span data-i18n="exportWord">Export Word</span>
@@ -288,6 +292,7 @@
                 noFeedback: "No textual feedback found.",
                 exportPdf: "Export PDF",
                 exportWord: "Export Word",
+                exportExcel: "Export Excel",
                 exporting: "Generating...",
                 navUpload: "Upload Excel",
                 clearData: "Clear Data",
@@ -333,6 +338,7 @@
                 noFeedback: "ບໍ່ພົບຄຳເຫັນ ຫຼື ຂໍ້ສະເໜີແນະ.",
                 exportPdf: "ສົ່ງອອກ PDF",
                 exportWord: "ສົ່ງອອກ Word",
+                exportExcel: "ສົ່ງອອກ Excel",
                 exporting: "ກຳລັງສ້າງ...",
                 navUpload: "ອັບໂຫຼດ Excel",
                 clearData: "ລຶບຂໍ້ມູນ",
@@ -417,6 +423,7 @@
                 document.getElementById('dashboardContent').classList.remove('hidden');
                 document.getElementById('exportPdfBtn').classList.remove('hidden');
                 document.getElementById('exportWordBtn').classList.remove('hidden');
+                document.getElementById('exportExcelBtn').classList.remove('hidden');
                 document.getElementById('navUploadBtn').classList.remove('hidden');
                 document.getElementById('clearDataBtn').classList.remove('hidden');
                 
@@ -831,7 +838,9 @@
 
             const element = document.getElementById('dashboardContent');
             const filterBar = document.getElementById('filterBarContainer');
-            const fileName = currentLang === 'en' ? 'Training_Evaluation_Dashboard.pdf' : 'ລາຍງານການປະເມີນຜົນການຝຶກອົບຮົມ.pdf';
+            
+            // Use uploaded file name for PDF, fallback to default if not found
+            const fileName = uploadedFileName ? `${uploadedFileName}.pdf` : (currentLang === 'en' ? 'Training_Evaluation_Dashboard.pdf' : 'ລາຍງານການປະເມີນຜົນການຝຶກອົບຮົມ.pdf');
             
             // Hide the filter section during export completely
             if (filterBar) filterBar.classList.add('hidden');
@@ -1037,7 +1046,9 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             
-            const fn = currentLang === 'en' ? 'Training_Narrative_Report.doc' : 'ບົດລາຍງານການປະເມີນຜົນ.doc';
+            // Use uploaded file name for Word, fallback to default if not found
+            const fn = uploadedFileName ? `${uploadedFileName}.doc` : (currentLang === 'en' ? 'Training_Narrative_Report.doc' : 'ບົດລາຍງານການປະເມີນຜົນ.doc');
+            
             a.href = url;
             a.download = fn;
             document.body.appendChild(a);
@@ -1046,6 +1057,147 @@
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
             }, 100);
+        });
+
+        // Excel Summary Export Logic
+        document.getElementById('exportExcelBtn').addEventListener('click', function() {
+            if(!filteredData || filteredData.length === 0) return;
+            
+            const t = i18n[currentLang];
+            const total = filteredData.length;
+
+            // Compute Stats (Same as Word Export but for Data Grid)
+            const genderKey = getColKey("Please identify if you are");
+            let male = 0, female = 0;
+            if(genderKey) {
+                filteredData.forEach(r => {
+                    const g = (r[genderKey]||'').toLowerCase();
+                    if(g.includes('male') && !g.includes('female')) male++;
+                    else if(g.includes('female')) female++;
+                });
+            }
+
+            const keyBef = getColKey("1. Please rate your knowledge");
+            const keyAft = getColKey("2. Please rate your knowledge");
+            let befCount = 0, aftCount = 0;
+            const validVals = ["very knowledgeable", "knowledgeable"];
+            filteredData.forEach(r => {
+                if(r[keyBef] && validVals.includes(r[keyBef].toLowerCase().trim())) befCount++;
+                if(r[keyAft] && validVals.includes(r[keyAft].toLowerCase().trim())) aftCount++;
+            });
+
+            const keyRel = getColKey("3. How relevant");
+            let relCount = 0;
+            filteredData.forEach(r => {
+                const val = (r[keyRel]||'').toLowerCase().trim();
+                if(val === 'very relevant' || val === 'relevant') relCount++;
+            });
+
+            const keyUse = getColKey("4. Do you think you will use");
+            let useCount = 0;
+            filteredData.forEach(r => { if((r[keyUse]||'').toLowerCase().trim() === 'yes' || r[keyUse] == '1') useCount++; });
+
+            const keyChal = getColKey("5. Do you think there will be any challenges");
+            let chalCount = 0;
+            filteredData.forEach(r => { if((r[keyChal]||'').toLowerCase().trim() === 'yes' || r[keyChal] == '1') chalCount++; });
+
+            const chalCols = [
+                { match: "need more training before I feel comfortable", en: "Need more training", lo: "ຕ້ອງການການຝຶກອົບຮົມເພີ່ມເຕີມ" },
+                { match: "not have the resources I need", en: "Lack resources", lo: "ຂາດຊັບພະຍາກອນ" },
+                { match: "not have the time to use", en: "Lack time", lo: "ບໍ່ມີເວລາ" },
+                { match: "supervisor will not support me", en: "No supervisor support", lo: "ຫົວໜ້າບໍ່ສະໜັບສະໜູນ" },
+                { match: "colleagues will not support me", en: "No colleague support", lo: "ເພື່ອນຮ່ວມງານບໍ່ສະໜັບສະໜູນ" },
+                { match: "apply)./Other", en: "Other", lo: "ອື່ນໆ" }
+            ];
+            
+            let chalStatsAll = chalCols.map(c => {
+                const k = getColKey(c.match);
+                let cCount = 0;
+                if(k) filteredData.forEach(r => { if(r[k] == "1" || String(r[k]).toLowerCase() === "yes") cCount++; });
+                return { label: c[currentLang], count: cCount, pct: total ? Math.round((cCount/total)*100) : 0 };
+            });
+
+            // Quality of Training Stats
+            const themesData = {
+                t1: ["7a.", "7b.", "7c.", "7d.", "7e."],
+                t2: ["8a.", "8b.", "8c.", "8d.", "8e.", "8f."],
+                t3: ["9a.", "9b.", "9c.", "9d.", "9e.", "9f.", "9g."],
+                t4: ["10a.", "10b.", "10c.", "10d."],
+                t5: ["11a.", "11b.", "11c.", "11d.", "11e.", "11f."]
+            };
+            const themePcts = {};
+            Object.keys(themesData).forEach(tk => {
+                let positive = 0, tCount = 0;
+                themesData[tk].forEach(qMatch => {
+                    const colKey = getColKey(qMatch);
+                    if(colKey) {
+                        filteredData.forEach(r => {
+                            let val = (r[colKey]||'').trim().toLowerCase();
+                            if(val) {
+                                tCount++;
+                                if(val.includes('agree') && !val.includes('disagree')) positive++;
+                            }
+                        });
+                    }
+                });
+                themePcts[tk] = tCount ? Math.round((positive / tCount) * 100) : 0;
+            });
+
+            const keyOverall = getColKey("12. Overall, how would you rate");
+            let ovrCount = 0;
+            filteredData.forEach(r => {
+                const val = (r[keyOverall]||'').toLowerCase().trim();
+                if(val === 'excellent' || val === 'good') ovrCount++;
+            });
+
+            // Build Array of Arrays for SheetJS
+            const ws_data = [
+                [`${t.title} - Summary Data`],
+                [],
+                [t.repSec1, "Count", "Percentage"],
+                [t.totalParticipants, total, "100%"],
+                [t.genderMale, male, (total ? Math.round(male/total*100) : 0) + "%"],
+                [t.genderFemale, female, (total ? Math.round(female/total*100) : 0) + "%"],
+                [],
+                [t.repSec2, "Count", "Percentage"],
+                [t.lblBefore + " (Knowledgeable)", befCount, (total ? Math.round(befCount/total*100) : 0) + "%"],
+                [t.lblAfter + " (Knowledgeable)", aftCount, (total ? Math.round(aftCount/total*100) : 0) + "%"],
+                [t.chartRelevance, relCount, (total ? Math.round(relCount/total*100) : 0) + "%"],
+                [t.chartUsefulness, useCount, (total ? Math.round(useCount/total*100) : 0) + "%"],
+                [t.chartHasChallenges, chalCount, (total ? Math.round(chalCount/total*100) : 0) + "%"],
+                [],
+                [t.chartChallengesList, "Count", "Percentage"]
+            ];
+
+            // Add Challenges Rows
+            chalStatsAll.forEach(c => {
+                ws_data.push([c.label, c.count, c.pct + "%"]);
+            });
+
+            ws_data.push([]);
+            ws_data.push([t.repSec3, "Agree (%)"]);
+            ws_data.push([t.theme1, themePcts.t1 + "%"]);
+            ws_data.push([t.theme2, themePcts.t2 + "%"]);
+            ws_data.push([t.theme3, themePcts.t3 + "%"]);
+            ws_data.push([t.theme4, themePcts.t4 + "%"]);
+            ws_data.push([t.theme5, themePcts.t5 + "%"]);
+
+            ws_data.push([]);
+            ws_data.push([t.repSec4, "Count", "Percentage"]);
+            ws_data.push([t.chartOverall + " (Excellent/Good)", ovrCount, (total ? Math.round(ovrCount/total*100) : 0) + "%"]);
+
+            // Generate Workbook and Save
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            
+            // Adjust column widths for better readability
+            ws['!cols'] = [{ wch: 60 }, { wch: 15 }, { wch: 15 }];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Summary");
+            
+            // Use uploaded file name for Excel Export
+            const fn = uploadedFileName ? `${uploadedFileName}_Summary.xlsx` : (currentLang === 'en' ? 'Training_Summary_Report.xlsx' : 'ລາຍງານສັງລວມການປະເມີນ.xlsx');
+            XLSX.writeFile(wb, fn);
         });
 
         // Clear Data Logic
@@ -1066,6 +1218,7 @@
             document.getElementById('dashboardContent').classList.add('hidden');
             document.getElementById('exportPdfBtn').classList.add('hidden');
             document.getElementById('exportWordBtn').classList.add('hidden');
+            document.getElementById('exportExcelBtn').classList.add('hidden');
             document.getElementById('navUploadBtn').classList.add('hidden');
             document.getElementById('clearDataBtn').classList.add('hidden');
             document.getElementById('uploadSection').classList.remove('hidden');
